@@ -1,0 +1,9 @@
+{
+    "database": {
+        "database": "nextavy_test",
+        "username": "postgres",
+        "password": "12345678",
+        "dialect": "postgres",
+        "logging": false
+    }
+}
