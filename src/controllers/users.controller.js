@@ -1,32 +1,42 @@
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const controller = {};
+const { validationResult } = require('express-validator');
 
 controller.registerUser = async (req, res) => {
-  const { username, email, password } = req.body;
+  const errors = validationResult(req);
 
-  if (!username || !email || !password) {
-    return res.status(400).json({
-      message: 'All the fields are required',
-      validationErrors: {
-        username: 'Username cannot be null',
-      },
-    });
+  // Check if express-validator found erros in our request body
+  if (!errors.isEmpty()) {
+    // Create an object that will save the errors for thests purposes
+    const validationErrors = {};
+    errors.array().forEach((error) => (validationErrors[error.param] = error.msg));
+    return res.status(400).json({ validationErrors });
   }
 
-  const hashed = await bcrypt.hash(password, 10);
-  const user = {
-    username,
-    email,
-    password: hashed,
-  };
-  const newUser = await User.create(user);
-  if (newUser)
-    return res.json({
-      message: 'User created successfully',
-    });
+  try {
+    const { username, email, password } = req.body;
 
-  return res.status(400).json({ message: 'Something went wrong' });
+    const hashed = await bcrypt.hash(password, 10);
+    const user = {
+      username,
+      email,
+      password: hashed,
+    };
+    const newUser = await User.create(user);
+    if (newUser) {
+      return res.json({
+        message: 'User created successfully',
+      });
+    }
+  } catch (e) {
+    console.error(e);
+    return res.status(400).json({ message: 'Something went wrong' });
+  }
+};
+
+controller.findByEmail = async (email) => {
+  return await User.findOne({ where: { email: email } });
 };
 
 module.exports = controller;

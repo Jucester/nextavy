@@ -14,7 +14,7 @@ beforeEach(() => {
 const validUser = {
   username: 'user1',
   email: 'user1@test.com',
-  password: '123456',
+  password: 'Ps123456',
 };
 
 const postUser = (user = validUser) => {
@@ -60,7 +60,7 @@ describe('User Registration', () => {
     const res = await postUser({
       username: null,
       email: 'user1@test.com',
-      password: '123456',
+      password: 'Ps123456',
     });
     expect(res.status).toBe(400);
   });
@@ -69,21 +69,69 @@ describe('User Registration', () => {
     const res = await postUser({
       username: null,
       email: 'user1@test.com',
-      password: '123456',
+      password: 'Ps123456',
     });
-    console.log(res.body)
+
     const body = res.body;
     expect(body.validationErrors).not.toBeUndefined();
   });
 
-  it('Returns Username cannot be null when username is null', async () => {
+  it('Returns errors for both username and email is null', async () => {
     const res = await postUser({
       username: null,
-      email: 'user1@test.com',
-      password: '123456',
+      email: null,
+      password: 'Ps123456',
     });
-    console.log(res.body)
+
     const body = res.body;
-    expect(body.validationErrors.username).toBe('Username cannot be null');
-  })
+    expect(Object.keys(body.validationErrors)).toEqual(['username', 'email']);
+  });
+
+  // Dynamic testing fields
+  it.each([
+    ['username', null, 'Username cannot be null'],
+    ['username', 'us', 'Unsername must have min 3 and max 20 characters'],
+    ['username', 'u'.repeat(21), 'Unsername must have min 3 and max 20 characters'],
+    ['email', null, 'Email cannot be null'],
+    ['email', 'mail.com', 'You entered and invalid email'],
+    ['email', 'user.mail.com', 'You entered and invalid email'],
+    ['email', 'user@mail', 'You entered and invalid email'],
+    ['password', null, 'Password cannot be null'],
+    ['password', '1234', 'Password must be at least 8 characters'],
+    ['password', 'alllower', 'Password must have at least 1 uppercase letter and 1 number'],
+    ['password', 'ALLUPPER', 'Password must have at least 1 uppercase letter and 1 number'],
+    ['password', '12345678', 'Password must have at least 1 uppercase letter and 1 number'],
+    ['password', 'lowerUPPER', 'Password must have at least 1 uppercase letter and 1 number'],
+    ['password', 'lower1234', 'Password must have at least 1 uppercase letter and 1 number'],
+    ['password', 'UPPER1234', 'Password must have at least 1 uppercase letter and 1 number'],
+  ])('when %s is %s, %s is received', async (field, value, expectedMsg) => {
+    const user = {
+      username: 'user1',
+      email: 'user1@test.com',
+      password: 'Ps123456',
+    };
+
+    user[field] = value;
+    const response = await postUser(user);
+    const body = response.body;
+    expect(body.validationErrors[field]).toBe(expectedMsg);
+  });
+
+  it('returns Email already exists when user try to register with an email already in use', async () => {
+    await User.create({ ...validUser });
+    const response = await postUser();
+    const body = response.body;
+    expect(body.validationErrors.email).toBe('Email already exists');
+  });
+
+  it('returns errors for username is null and email is in use', async () => {
+    await User.create({ ...validUser });
+    const response = await postUser({
+      username: null,
+      email: 'user1@test.com',
+      password: 'Ps123456',
+    });
+    const body = response.body;
+    expect(Object.keys(body.validationErrors)).toEqual(['username', 'email']);
+  });
 });
