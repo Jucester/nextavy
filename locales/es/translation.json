@@ -1,0 +1,12 @@
+{
+    "username_null":  "El nombre de usuario no puede estar vacio",
+    "username_size":  "El nombre de usuario debe tener minimo 3 caracteres y máximo 20",
+    "email_null":      "El email no puede estar vacío",
+    "email_invalid":  "Email invalido",
+    "email_in_use":  "El email ya existe",
+    "password_null":  "La contraseña no puede estar vacía",
+    "password_must_min":   "La contraseña debe tener mínimo 8 caracteres",
+    "password_must":  "La contraseña debe tener al menos una letra mayúscula y un número",
+    "user_created": "Usuario creado satisfactoriamente",
+    "something_wrong": "Algo salió mal. Vuelve a intentarlo"
+}

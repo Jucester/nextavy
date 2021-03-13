@@ -10,7 +10,7 @@ controller.registerUser = async (req, res) => {
   if (!errors.isEmpty()) {
     // Create an object that will save the errors for thests purposes
     const validationErrors = {};
-    errors.array().forEach((error) => (validationErrors[error.param] = error.msg));
+    errors.array().forEach((error) => (validationErrors[error.param] = req.t(error.msg)));
     return res.status(400).json({ validationErrors });
   }
 
@@ -26,12 +26,12 @@ controller.registerUser = async (req, res) => {
     const newUser = await User.create(user);
     if (newUser) {
       return res.json({
-        message: 'User created successfully',
+        message: req.t('user_created'),
       });
     }
   } catch (e) {
     console.error(e);
-    return res.status(400).json({ message: 'Something went wrong' });
+    return res.status(400).json({ message: req.t('something_wrong') });
   }
 };
 
