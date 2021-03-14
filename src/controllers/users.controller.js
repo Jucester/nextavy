@@ -2,6 +2,16 @@ const User = require('../models/User');
 const bcrypt = require('bcrypt');
 const controller = {};
 const { validationResult } = require('express-validator');
+const crypto = require('crypto');
+const sequelize = require('../config/database');
+
+const EmailService = require('../services/email/EmailService');
+const EmailException = require('../services/email/EmailException');
+
+// To generate a token for email verification
+const generateToken = (length) => {
+  return crypto.randomBytes(length).toString('hex').substring(0, length);
+};
 
 controller.registerUser = async (req, res) => {
   const errors = validationResult(req);
@@ -22,16 +32,26 @@ controller.registerUser = async (req, res) => {
       username,
       email,
       password: hashed,
+      activation_token: generateToken(16),
     };
-    const newUser = await User.create(user);
+    const transaction = await sequelize.transaction();
+    const newUser = await User.create(user, { transaction });
+
+    try {
+      await EmailService.sendActivationEmail(email, newUser.activation_token);
+      await transaction.commit();
+    } catch (err) {
+      await transaction.rollback();
+      throw new EmailException();
+    }
+
     if (newUser) {
-      return res.json({
+      return res.status(200).json({
         message: req.t('user_created'),
       });
     }
-  } catch (e) {
-    console.error(e);
-    return res.status(400).json({ message: req.t('something_wrong') });
+  } catch (err) {
+    return res.status(502).send({ message: req.t(err.message) });
   }
 };
 

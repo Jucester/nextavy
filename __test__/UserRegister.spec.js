@@ -2,6 +2,8 @@ const request = require('supertest');
 const app = require('../src/app');
 const User = require('../src/models/User');
 const sequelize = require('../src/config/database');
+const nodemailer_stub = require('nodemailer-stub');
+const EmailService = require('../src/services/email/EmailService');
 
 beforeAll(() => {
   return sequelize.sync();
@@ -102,6 +104,8 @@ describe('User Registration', () => {
   const password_must_min = 'Password must be at least 8 characters';
   const password_must = 'Password must have at least 1 uppercase letter and 1 number';
 
+  const email_sending_error = 'Error sending email. Try again.';
+
   // Dynamic testing fields
   it.each([
     ['username', null, username_null],
@@ -149,6 +153,72 @@ describe('User Registration', () => {
     const body = response.body;
     expect(Object.keys(body.validationErrors)).toEqual(['username', 'email']);
   });
+
+  it('creates user with email_verified in false', async () => {
+    await postUser();
+    const users = await User.findAll();
+    const savedUser = users[0];
+    expect(savedUser.email_verified).toBe(false);
+  });
+  /*
+  it('creates user with email_verified in false', async () => {
+    await postUser();
+    const users = await User.findAll();
+    const savedUser = users[0];
+    expect(savedUser.email_verified).toBe(false);
+  });*/
+
+  it('creates an activation_token for user', async () => {
+    await postUser();
+    const users = await User.findAll();
+    const savedUser = users[0];
+    expect(savedUser.activation_token).toBeTruthy();
+  });
+
+  it('send an Account activtion email with activation_token', async () => {
+    await postUser();
+    const lastMail = nodemailer_stub.interactsWithMail.lastMail();
+
+    expect(lastMail.to[0]).toContain('user1@test.com');
+
+    const users = await User.findAll();
+    const savedUser = users[0];
+
+    expect(lastMail.content).toContain(savedUser.activation_token);
+  });
+
+  it('returns 502 Bad Gateway when sending email fails', async () => {
+    const mockSendActivation = jest
+      .spyOn(EmailService, 'sendActivationEmail')
+      .mockRejectedValue({ message: 'Something went wrong' });
+
+    const response = await postUser();
+
+    expect(response.status).toBe(502);
+    mockSendActivation.mockRestore();
+  });
+
+  it(`returns ${email_sending_error} failure message when sending email fails`, async () => {
+    const mockSendActivation = jest
+      .spyOn(EmailService, 'sendActivationEmail')
+      .mockRejectedValue({ message: 'Something went wrong' });
+
+    const response = await postUser();
+
+    expect(response.body.message).toBe(email_sending_error);
+    mockSendActivation.mockRestore();
+  });
+
+  it('does not save user to database if activation email fails', async () => {
+    const mockSendActivation = jest
+      .spyOn(EmailService, 'sendActivationEmail')
+      .mockRejectedValue({ message: 'Something went wrong' });
+
+    await postUser();
+    const users = await User.findAll();
+    expect(users.length).toBe(0);
+    mockSendActivation.mockRestore();
+  });
 });
 
 describe('Internationalization', () => {
@@ -166,6 +236,7 @@ describe('Internationalization', () => {
   const password_must = 'La contraseña debe tener al menos una letra mayúscula y un número';
 
   const user_created = 'Usuario creado satisfactoriamente';
+  const email_sending_error = 'Error al enviar el correo. Intentalo de nuevo.';
 
   // Dynamic testing fields
   it.each([
@@ -207,5 +278,16 @@ describe('Internationalization', () => {
   it(`Returns ${user_created} mesage when singup request is valid and language is set as Spanish`, async () => {
     const res = await postUser();
     expect(res.body.message).toBe(user_created);
+  });
+
+  it(`returns ${email_sending_error} message when sending email fails`, async () => {
+    const mockSendActivation = jest
+      .spyOn(EmailService, 'sendActivationEmail')
+      .mockRejectedValue({ message: 'Something went wrong' });
+
+    const response = await postUser({ ...validUser }, { language: 'es' });
+
+    expect(response.body.message).toBe(email_sending_error);
+    mockSendActivation.mockRestore();
   });
 });
