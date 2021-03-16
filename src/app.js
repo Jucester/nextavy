@@ -31,5 +31,9 @@ app.use(i18nMiddleware.handle(i18n));
 // Routes
 app.use('/api/v1.0/users', require('./routes/users.routes'));
 
+app.use((err, res, res, next) => {
+  console.log(err);
+})
+
 console.log('Environment: ' + process.env.NODE_ENV);
 module.exports = app;
