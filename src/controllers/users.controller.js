@@ -59,4 +59,23 @@ controller.findByEmail = async (email) => {
   return await User.findOne({ where: { email: email } });
 };
 
+controller.emailHandler = async (req, res) => {
+  const token = req.params.token;
+
+  try {
+    const user = await User.findOne({ where: { activation_token: token } });
+    user.email_verified = true;
+    user.activation_token = null;
+    await user.save();
+
+    res.status(200).json({
+      message: req.t('email_verification_success'),
+    });
+  } catch (err) {
+    res.status(400).json({
+      message: req.t('account_activation_failure'),
+    });
+  }
+};
+
 module.exports = controller;

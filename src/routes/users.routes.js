@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const routes = Router();
-const { registerUser, findByEmail } = require('../controllers/users.controller');
+const { registerUser, findByEmail, emailHandler } = require('../controllers/users.controller');
 const { check } = require('express-validator');
 
 routes.post(
@@ -37,5 +37,8 @@ routes.post(
     .withMessage('password_must'),
   registerUser
 );
+
+// Route to activate the account
+routes.post('/token/:token', emailHandler);
 
 module.exports = routes;

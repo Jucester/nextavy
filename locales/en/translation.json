@@ -9,5 +9,7 @@
     "password_must": "Password must have at least 1 uppercase letter and 1 number",
     "user_created": "User created successfully",
     "something_wrong": "Something went wrong. Try again",
-    "email_sending_error": "Error sending email. Try again."
+    "email_sending_error": "Error sending email. Try again.",
+    "email_verification_success": "Email verified succesfully",
+    "account_activation_failure": "This account is either active or the token is invalid"
 }

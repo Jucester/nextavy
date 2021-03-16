@@ -9,5 +9,7 @@
     "password_must":  "La contraseña debe tener al menos una letra mayúscula y un número",
     "user_created": "Usuario creado satisfactoriamente",
     "something_wrong": "Algo salió mal. Vuelve a intentarlo",
-    "email_sending_error": "Error al enviar el correo. Intentalo de nuevo."
+    "email_sending_error": "Error al enviar el correo. Intentalo de nuevo.",
+    "email_verification_success": "Email verificado exitosamente",
+    "account_activation_failure": "La cuenta ya esta activada o el token es invalido"
 }

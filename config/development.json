@@ -5,5 +5,16 @@
         "password": "12345678",
         "dialect": "postgres",
         "logging": false
-    }
+    },
+    
+    "email": {
+        "host": "smtp.mailtrap.io",
+        "port": 2525,
+        "auth": {
+            "user": "137661d900d5a3",
+            "pass": "b20c63b19954e7"
+        }
+    }   
 }
+
+

@@ -5,5 +5,14 @@
         "password": "12345678",
         "dialect": "postgres",
         "logging": false
-    }
+    },
+
+    "email": {
+        "host": "localhost",
+        "port": 8587,
+        "tls": {
+            "rejectUnauthorized": false
+        }
+    }  
 }
+

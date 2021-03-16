@@ -1,6 +1,9 @@
 const nodemailer = require('nodemailer');
-const nodemailer_stub = require('nodemailer-stub');
+const config = require('config');
+//const nodemailer_stub = require('nodemailer-stub');
 
-const transporter = nodemailer.createTransport(nodemailer_stub.stubTransport);
+const emailConfig = config.get('email');
+
+const transporter = nodemailer.createTransport({ ...emailConfig });
 
 module.exports = transporter;
