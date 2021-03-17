@@ -11,5 +11,7 @@
     "something_wrong": "Algo salió mal. Vuelve a intentarlo",
     "email_sending_error": "Error al enviar el correo. Intentalo de nuevo.",
     "email_verification_success": "Email verificado exitosamente",
-    "account_activation_failure": "La cuenta ya esta activada o el token es invalido"
+    "account_activation_failure": "La cuenta ya esta activada o el token es invalido",
+    "user_not_found": "Usuario no encontrado",
+    "validation_failure": "Error en la validación"
 }

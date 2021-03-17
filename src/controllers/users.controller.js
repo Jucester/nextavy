@@ -5,23 +5,32 @@ const { validationResult } = require('express-validator');
 const crypto = require('crypto');
 const sequelize = require('../config/database');
 
+// Services
 const EmailService = require('../services/email/EmailService');
-const EmailException = require('../services/email/EmailException');
+
+// Error exceptions
+const EmailException = require('../errors/EmailException');
+const InvalidTokenException = require('../errors/InvalidTokenException');
+const ValidationException = require('../errors/ValidationException');
+const UserNotFoundException = require('../errors/UserNotFoundException');
 
 // To generate a token for email verification
 const generateToken = (length) => {
   return crypto.randomBytes(length).toString('hex').substring(0, length);
 };
 
-controller.registerUser = async (req, res) => {
+controller.registerUser = async (req, res, next) => {
   const errors = validationResult(req);
 
   // Check if express-validator found erros in our request body
   if (!errors.isEmpty()) {
     // Create an object that will save the errors for thests purposes
-    const validationErrors = {};
-    errors.array().forEach((error) => (validationErrors[error.param] = req.t(error.msg)));
-    return res.status(400).json({ validationErrors });
+
+    //const validationErrors = {};
+    //errors.array().forEach((error) => (validationErrors[error.param] = req.t(error.msg)));
+    //return res.status(400).json({ validationErrors });
+
+    return next(new ValidationException(errors.array()));
   }
 
   try {
@@ -51,7 +60,8 @@ controller.registerUser = async (req, res) => {
       });
     }
   } catch (err) {
-    return res.status(502).send({ message: req.t(err.message) });
+    //return res.status(502).send({ message: req.t(err.message) });
+    next(err);
   }
 };
 
@@ -59,7 +69,7 @@ controller.findByEmail = async (email) => {
   return await User.findOne({ where: { email: email } });
 };
 
-controller.emailHandler = async (req, res) => {
+controller.emailHandler = async (req, res, next) => {
   const token = req.params.token;
 
   try {
@@ -72,8 +82,56 @@ controller.emailHandler = async (req, res) => {
       message: req.t('email_verification_success'),
     });
   } catch (err) {
+    /*
     res.status(400).json({
       message: req.t('account_activation_failure'),
+    });*/
+    next(new InvalidTokenException());
+  }
+};
+
+controller.getUsers = async (req, res) => {
+  // get page and pageSize from the custom pagination middleware
+  const { page, size } = req.pagination;
+  // findAndCountAll can be used to receive also a "count" property that we can use to paginate
+  const users = await User.findAndCountAll({
+    where: { email_verified: true },
+    attributes: ['id', 'username', 'email'],
+    limit: size,
+    offset: page * size,
+  });
+
+  //const count = await User.count({ where: { email_verified: true } });
+
+  return res.status(200).json({
+    content: users.rows,
+    page: page,
+    size: size,
+    totalPages: Math.ceil(users.count / size),
+  });
+};
+
+controller.getUser = async (req, res, next) => {
+  const id = req.params.id;
+
+  // findAndCountAll can be used to receive also a "count" property that we can use to paginate
+
+  try {
+    const user = await User.findOne({
+      where: { id: id, email_verified: true },
+      attributes: ['id', 'username', 'email'],
+    });
+
+    if (user) {
+      return res.status(200).json({
+        user,
+      });
+    } else {
+      next(new UserNotFoundException());
+    }
+  } catch (err) {
+    return res.status(502).json({
+      message: 'Something went wrong',
     });
   }
 };

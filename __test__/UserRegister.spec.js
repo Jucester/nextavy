@@ -259,6 +259,16 @@ describe('User Registration', () => {
     expect(users.length).toBe(0);
     //mockSendActivation.mockRestore();
   });
+
+  it('returns Validation Failure message in error response body when validation fails', async () => {
+    const response = await postUser({
+      username: null,
+      email: 'user1@test.com',
+      password: 'Ps123456',
+    });
+
+    expect(response.body.message).toBe('Validation Failure');
+  });
 });
 
 describe('Internationalization', () => {
@@ -277,6 +287,8 @@ describe('Internationalization', () => {
 
   const user_created = 'Usuario creado satisfactoriamente';
   const email_sending_error = 'Error al enviar el correo. Intentalo de nuevo.';
+
+  const validation_failure = 'Error en la validación';
 
   // Dynamic testing fields
   it.each([
@@ -331,6 +343,20 @@ describe('Internationalization', () => {
 
     expect(response.body.message).toBe(email_sending_error);
     //mockSendActivation.mockRestore();
+  });
+
+  it(`returns ${validation_failure} in error response body when validation fails and lang is set to es`, async () => {
+    const response = await postUser(
+      {
+        username: null,
+        email: 'user1@test.com',
+        password: 'Ps123456',
+      },
+      {
+        language: 'es',
+      }
+    );
+    expect(response.body.message).toBe(validation_failure);
   });
 });
 
@@ -403,8 +429,44 @@ describe('Account Activation', () => {
         .post('/api/v1.0/users/token/' + token)
         .set('Accept-Language', lang)
         .send();
-      console.log(response.body);
       expect(response.body.message).toBe(message);
     }
   );
+});
+
+describe('Error model', () => {
+  it('returns path, timestamp, message and validationErrors in response when validation failure is throw', async () => {
+    const response = await postUser({ ...validUser, username: null });
+    const body = response.body;
+    expect(Object.keys(body)).toEqual(['path', 'timestamp', 'message', 'validationErrors']);
+  });
+  it('returns path, timestamp and message in response when request fails in another error', async () => {
+    const token = 'wrong-token-that-not-exists';
+    const response = await request(app)
+      .post('/api/v1.0/users/token/' + token)
+      .send();
+    const body = response.body;
+    expect(Object.keys(body)).toEqual(['path', 'timestamp', 'message']);
+  });
+
+  it('returns path in error body', async () => {
+    const token = 'wrong-token-that-not-exists';
+    const response = await request(app)
+      .post('/api/v1.0/users/token/' + token)
+      .send();
+    const body = response.body;
+    expect(body.path).toEqual('/api/v1.0/users/token/' + token);
+  });
+
+  it('returns timestamp in milliseconds within 5 seconds value in error body', async () => {
+    const nowInMIllis = new Date().getTime();
+    const fiveSecondsLater = nowInMIllis + 5 * 1000;
+    const token = 'wrong-token-that-not-exists';
+    const response = await request(app)
+      .post('/api/v1.0/users/token/' + token)
+      .send();
+    const body = response.body;
+    expect(body.timestamp).toBeGreaterThan(nowInMIllis);
+    expect(body.timestamp).toBeLessThan(fiveSecondsLater);
+  });
 });
