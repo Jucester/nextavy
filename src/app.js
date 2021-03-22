@@ -29,6 +29,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(i18nMiddleware.handle(i18n));
 
 // Routes
+app.use('/api/v1.0/auth', require('./routes/authentication.routes'));
 app.use('/api/v1.0/users', require('./routes/users.routes'));
 
 // Error handler with Exceptions

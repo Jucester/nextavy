@@ -1,10 +1,10 @@
 const { Router } = require('express');
-const routes = Router();
+const router = Router();
 const { registerUser, findByEmail, emailHandler, getUsers, getUser } = require('../controllers/users.controller');
 const { check } = require('express-validator');
 const { pagination } = require('../middlewares/pagination');
 
-routes.post(
+router.post(
   '/',
   check('username')
     .notEmpty()
@@ -40,11 +40,11 @@ routes.post(
 );
 
 // Route to activate the account
-routes.post('/token/:token', emailHandler);
+router.post('/token/:token', emailHandler);
 
 // custom pagination middleware to handle the pagination here and in others functions
-routes.get('/', pagination, getUsers);
+router.get('/', pagination, getUsers);
 
-routes.get('/:id', getUser);
+router.get('/:id', getUser);
 
-module.exports = routes;
+module.exports = router;

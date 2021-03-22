@@ -1,6 +1,7 @@
 const app = require('./src/app');
 const sequelize = require('./src/config/database');
 const User = require('./src/models/User');
+require('dotenv').config();
 
 const addUsers = async (activesCount, inactivesCount = 0) => {
   for (let i = 1; i <= activesCount + inactivesCount; i++) {
