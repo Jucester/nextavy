@@ -35,7 +35,7 @@ beforeAll(async () => {
   });
   await server.listen(8587, 'localhost');
 
-  return sequelize.sync();
+  return await sequelize.sync();
 });
 
 afterAll(async () => {
@@ -43,9 +43,9 @@ afterAll(async () => {
   await server.close();
 });
 
-beforeEach(() => {
+beforeEach( async () => {
   simulateSmtpFaiulre = false;
-  return User.destroy({ truncate: true });
+  return await User.destroy({ truncate: true });
 });
 
 const validUser = {

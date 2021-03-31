@@ -13,5 +13,8 @@
     "email_verification_success": "Email verificado exitosamente",
     "account_activation_failure": "La cuenta ya esta activada o el token es invalido",
     "user_not_found": "Usuario no encontrado",
-    "validation_failure": "Error en la validación"
+    "validation_failure": "Error en la validación",
+    "authentication_error": "Credenciales incorrectas",
+    "inactive_email_not_verified": "Cuenta inactiva. El email no esta vericiado",
+    "unauthorized_user_update": "No puedes actualizar el usuario"
 }

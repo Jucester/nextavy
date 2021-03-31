@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const router = Router();
-const { registerUser, findByEmail, emailHandler, getUsers, getUser } = require('../controllers/users.controller');
+const { registerUser, findByEmail, emailHandler, getUsers, getUser, updateUser } = require('../controllers/users.controller');
 const { check } = require('express-validator');
 const { pagination } = require('../middlewares/pagination');
 
@@ -46,5 +46,7 @@ router.post('/token/:token', emailHandler);
 router.get('/', pagination, getUsers);
 
 router.get('/:id', getUser);
+
+router.put('/:id', updateUser);
 
 module.exports = router;

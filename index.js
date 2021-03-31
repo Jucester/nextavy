@@ -1,14 +1,16 @@
 const app = require('./src/app');
 const sequelize = require('./src/config/database');
 const User = require('./src/models/User');
+const bcrypt = require('bcrypt');
 require('dotenv').config();
 
 const addUsers = async (activesCount, inactivesCount = 0) => {
+  const hash = await bcrypt.hash('Ps123456*', 10);
   for (let i = 1; i <= activesCount + inactivesCount; i++) {
     await User.create({
       username: `user${i}`,
       email: `user${i}@test.com`,
-      password: `Ps123456*`,
+      password: hash,
       email_verified: i < activesCount,
     });
   }

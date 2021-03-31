@@ -7,11 +7,11 @@ const sequelize = require('../src/config/database');
 jest.setTimeout(30000);
 
 beforeAll(async () => {
-  return sequelize.sync();
+  return await sequelize.sync();
 });
 
-beforeEach(() => {
-  return User.destroy({ truncate: true });
+beforeEach(async () => {
+  return await User.destroy({ truncate: true });
 });
 
 const getUsers = () => {

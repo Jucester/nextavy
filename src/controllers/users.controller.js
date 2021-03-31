@@ -13,6 +13,7 @@ const EmailException = require('../errors/EmailException');
 const InvalidTokenException = require('../errors/InvalidTokenException');
 const ValidationException = require('../errors/ValidationException');
 const UserNotFoundException = require('../errors/UserNotFoundException');
+const ForbiddenException = require('../errors/ForbiddenException');
 
 // To generate a token for email verification
 const generateToken = (length) => {
@@ -134,6 +135,10 @@ controller.getUser = async (req, res, next) => {
       message: 'Something went wrong',
     });
   }
+};
+
+controller.updateUser = async (req, res, next) => {
+  next(new ForbiddenException('unauthorized_user_update'));
 };
 
 module.exports = controller;
