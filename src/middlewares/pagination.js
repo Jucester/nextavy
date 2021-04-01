@@ -1,3 +1,5 @@
+// This Middleware to handle pagination in our routes
+
 const pagination = (req, res, next) => {
   // Receiving how much users with be listed in our pagination
   let pageAsNumber = Number.parseInt(req.query.page);

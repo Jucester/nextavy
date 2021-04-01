@@ -1,8 +1,16 @@
 const { Router } = require('express');
 const router = Router();
-const { registerUser, findByEmail, emailHandler, getUsers, getUser, updateUser } = require('../controllers/users.controller');
+const {
+  registerUser,
+  findByEmail,
+  emailHandler,
+  getUsers,
+  getUser,
+  updateUser,
+} = require('../controllers/users.controller');
 const { check } = require('express-validator');
 const { pagination } = require('../middlewares/pagination');
+const basicAuthorization = require('../middlewares/basicAuthorization');
 
 router.post(
   '/',
@@ -47,6 +55,6 @@ router.get('/', pagination, getUsers);
 
 router.get('/:id', getUser);
 
-router.put('/:id', updateUser);
+router.put('/:id', basicAuthorization, updateUser);
 
 module.exports = router;

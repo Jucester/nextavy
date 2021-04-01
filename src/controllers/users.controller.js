@@ -138,7 +138,43 @@ controller.getUser = async (req, res, next) => {
 };
 
 controller.updateUser = async (req, res, next) => {
-  next(new ForbiddenException('unauthorized_user_update'));
+  const authUser = req.authenticatedUser;
+
+  // eslint-disable-next-line eqeqeq
+  if (!authUser || authUser.id != req.params.id) {
+    return next(new ForbiddenException('unauthorized_user_update'));
+  }
+  /*
+  const authorization = req.headers.authorization;
+  if (authorization) {
+    const encoded = authorization.substring(6);
+    const decoded = Buffer.from(encoded, 'base64').toString('ascii');
+    const [email, password] = decoded.split(':');
+    const user = await User.findOne({ where: { email: email } });
+    if (!user) {
+      return next(new ForbiddenException('unauthorized_user_update'));
+    }
+    // eslint-disable-next-line eqeqeq
+    if (user.id != req.params.id) {
+      return next(new ForbiddenException('unauthorized_user_update'));
+    }
+    if (!user.email_verified) {
+      return next(new ForbiddenException('unauthorized_user_update'));
+    }
+
+    const match = await bcrypt.compare(password, user.password);
+
+    if (!match) {
+      return next(new ForbiddenException('unauthorized_user_update'));
+    } */
+
+  const user = await User.findOne({ where: { id: authUser.id } });
+  user.username = req.body.username;
+  user.save();
+
+  return res.status(200).json({
+    message: 'Updated',
+  });
 };
 
 module.exports = controller;
