@@ -51,7 +51,7 @@ router.post(
 router.post('/token/:token', emailHandler);
 
 // custom pagination middleware to handle the pagination here and in others functions
-router.get('/', pagination, getUsers);
+router.get('/', pagination, basicAuthorization, getUsers);
 
 router.get('/:id', getUser);
 

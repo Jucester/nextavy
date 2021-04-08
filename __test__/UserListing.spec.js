@@ -2,7 +2,7 @@ const request = require('supertest');
 const app = require('../src/app');
 const User = require('../src/models/User');
 const sequelize = require('../src/config/database');
-
+const bcrypt = require('bcrypt');
 // This option to set timeout in 30000 because some tests (send email) fails because async timeout error
 jest.setTimeout(30000);
 
@@ -14,16 +14,23 @@ beforeEach(async () => {
   return await User.destroy({ truncate: true });
 });
 
-const getUsers = () => {
-  return request(app).get('/api/v1.0/users').send();
+const getUsers = (options = {}) => {
+  const agent = request(app).get('/api/v1.0/users');
+
+  if (options.auth) {
+    const { email, password } = options.auth;
+    agent.auth(email, password);
+  }
+  return agent.send();
 };
 
 const addUsers = async (activesCount, inactivesCount = 0) => {
+  const hash = await bcrypt.hash('Ps123456*', 10);
   for (let i = 0; i <= activesCount + inactivesCount; i++) {
     await User.create({
       username: `user${i}`,
       email: `user${i}@test.com`,
-      password: `Ps123456*`,
+      password: hash,
       email_verified: i < activesCount,
     });
   }
@@ -117,6 +124,12 @@ describe('Listing users', () => {
 
     expect(response.body.page).toBe(0);
     expect(response.body.size).toBe(10);
+  });
+
+  it('returns user page without logged in user when request has valid authorization', async () => {
+    await addUsers(11);
+    const response = await getUsers({ auth: { email: 'user1@test.com', password: 'Ps123456*' } });
+    expect(response.body.totalPages).toBe(1);
   });
 });
 

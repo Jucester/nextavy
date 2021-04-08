@@ -4,6 +4,7 @@ const controller = {};
 const { validationResult } = require('express-validator');
 const crypto = require('crypto');
 const sequelize = require('../config/database');
+const Sequelize = require('sequelize');
 
 // Services
 const EmailService = require('../services/email/EmailService');
@@ -14,6 +15,7 @@ const InvalidTokenException = require('../errors/InvalidTokenException');
 const ValidationException = require('../errors/ValidationException');
 const UserNotFoundException = require('../errors/UserNotFoundException');
 const ForbiddenException = require('../errors/ForbiddenException');
+
 
 // To generate a token for email verification
 const generateToken = (length) => {
@@ -92,11 +94,14 @@ controller.emailHandler = async (req, res, next) => {
 };
 
 controller.getUsers = async (req, res) => {
+  const authUser = req.authenticatedUser;
+
+  const id = authUser ? authUser.id : 0;
   // get page and pageSize from the custom pagination middleware
   const { page, size } = req.pagination;
   // findAndCountAll can be used to receive also a "count" property that we can use to paginate
   const users = await User.findAndCountAll({
-    where: { email_verified: true },
+    where: { email_verified: true, id: { [ Sequelize.Op.not ] : id } },
     attributes: ['id', 'username', 'email'],
     limit: size,
     offset: page * size,
