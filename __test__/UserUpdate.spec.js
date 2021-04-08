@@ -31,15 +31,22 @@ const addUser = async (user = { ...validUser }) => {
   return await User.create(user);
 };
 
-const putUser = (id = 5, body = null, options = {}) => {
-  let agent = request(app).put(`/api/v1.0/users/${id}`);
+const putUser = async (id = 5, body = null, options = {}) => {
+  let agent = request(app);
+  let token;
+
+  if (options.auth) {
+    const response = await agent.post('/api/v1.0/auth/login').send(options.auth);
+    token = response.body.token;
+  }
+  agent = request(app).put(`/api/v1.0/users/${id}`);
   if (options.language) {
     agent.set('Accept-Language', options.language);
   }
-  if (options.auth) {
-    const { email, password } = options.auth;
-    agent.auth(email, password);
+  if (token) {
+    agent.set('Authorization', `Bearer ${token}`);
   }
+
   return agent.send(body);
 };
 

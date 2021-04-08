@@ -122,4 +122,5 @@ describe('Authentication', () => {
     const res = await postAuth({ email: 'user1@test.com' });
     expect(res.status).toBe(401);
   });
+
 });

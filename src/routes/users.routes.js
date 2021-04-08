@@ -11,6 +11,7 @@ const {
 const { check } = require('express-validator');
 const { pagination } = require('../middlewares/pagination');
 const basicAuthorization = require('../middlewares/basicAuthorization');
+const tokenAuthentication = require('../middlewares/tokenAuthentication');
 
 router.post(
   '/',
@@ -55,6 +56,6 @@ router.get('/', pagination, basicAuthorization, getUsers);
 
 router.get('/:id', getUser);
 
-router.put('/:id', basicAuthorization, updateUser);
+router.put('/:id', tokenAuthentication, updateUser);
 
 module.exports = router;
