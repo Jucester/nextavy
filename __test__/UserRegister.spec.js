@@ -6,9 +6,6 @@ const sequelize = require('../src/config/database');
 // const EmailService = require('../src/services/email/EmailService');
 const SMTPServer = require('smtp-server').SMTPServer;
 
-// This option to set timeout in 30000 because some tests (send email) fails because async timeout error
-jest.setTimeout(30000);
-
 // Variables for the email sending test cases using SMTPServer instead of nodemailer_stub
 let lastMail, server;
 let simulateSmtpFaiulre = false;
@@ -35,17 +32,20 @@ beforeAll(async () => {
   });
   await server.listen(8587, 'localhost');
 
-  return await sequelize.sync();
+  // This option to set timeout in 30000 because some tests (send email) fails because async timeout error
+  jest.setTimeout(30000);
+  await sequelize.sync();
+});
+
+beforeEach(async () => {
+  simulateSmtpFaiulre = false;
+  await User.destroy({ truncate: true });
 });
 
 afterAll(async () => {
   // Closing the SMTP server
   await server.close();
-});
-
-beforeEach( async () => {
-  simulateSmtpFaiulre = false;
-  return await User.destroy({ truncate: true });
+  jest.setTimeout(5000);
 });
 
 const validUser = {

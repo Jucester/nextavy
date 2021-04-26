@@ -6,15 +6,18 @@ const sequelize = require('../src/config/database');
 //const es = require('../locales/es/translation.json');
 //const en = require('../locales/en/translation.json');
 
-// This option to set timeout in 30000 because some tests (send email) fails because async timeout error
-jest.setTimeout(30000);
-
 beforeAll(async () => {
-  return await sequelize.sync();
+  await sequelize.sync();
+  // This option to set timeout in 30000 because some tests (send email) fails because async timeout error
+  jest.setTimeout(30000);
 });
 
 beforeEach(async () => {
-  return await User.destroy({ truncate: true });
+  await User.destroy({ truncate: true });
+});
+
+afterAll(async () => {
+  jest.setTimeout(5000);
 });
 
 const validUser = {
@@ -78,7 +81,7 @@ describe('Authentication', () => {
     ['es', 'Credenciales incorrectas'],
     ['en', 'Incorrect credentials'],
   ])('when language is set to %s it returns %s when credentials are invalid', async (lang, message) => {
-    const res = await postAuth({ email: 'user1@test.com', password: 'Password*123' }, { language: lang });
+    const res = await postAuth({ email: 'user1@test.com', password: 'Password*wrong' }, { language: lang });
     expect(res.body.message).toBe(message);
   });
 
