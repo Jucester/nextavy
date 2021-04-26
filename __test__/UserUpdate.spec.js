@@ -46,8 +46,13 @@ const putUser = async (id = 5, body = null, options = {}) => {
   if (options.language) {
     agent.set('Accept-Language', options.language);
   }
-  if (token) {
-    agent.set('Authorization', `Bearer ${token}`);
+
+  if (options.token) {
+    agent.set('Authorization', `Bearer ${options.token}`);
+  } else {
+    if (token) {
+      agent.set('Authorization', `Bearer ${token}`);
+    }
   }
 
   return agent.send(body);
@@ -123,5 +128,9 @@ describe('User updates', () => {
     );
     const userInDb = await User.findOne({ where: { id: savedUser.id } });
     expect(userInDb.username).toBe('user1-updated');
+  });
+  it('returns 403 when token is not valid', async () => {
+    const response = await putUser(5, null, { token: '123' });
+    expect(response.status).toBe(403);
   });
 });

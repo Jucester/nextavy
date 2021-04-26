@@ -10,7 +10,6 @@ const {
 } = require('../controllers/users.controller');
 const { check } = require('express-validator');
 const { pagination } = require('../middlewares/pagination');
-const basicAuthorization = require('../middlewares/basicAuthorization');
 const tokenAuthentication = require('../middlewares/tokenAuthentication');
 
 router.post(
@@ -52,7 +51,7 @@ router.post(
 router.post('/token/:token', emailHandler);
 
 // custom pagination middleware to handle the pagination here and in others functions
-router.get('/', pagination, basicAuthorization, getUsers);
+router.get('/', pagination, tokenAuthentication, getUsers);
 
 router.get('/:id', getUser);
 
